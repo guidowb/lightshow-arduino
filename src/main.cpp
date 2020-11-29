@@ -7,6 +7,7 @@ extern void powerOff();
 
 extern void initializeString();
 extern void updateString();
+extern void setPattern(const char *pattern);
 extern void solid(CRGB color);
 extern void dots(CRGB color, int interval, int offset = 0);
 
@@ -42,7 +43,7 @@ void setup() {
   dots(warm, 8);
   dots(red, 8, 4);
 #else
-  solid(office);
+  setPattern("solid 0xd61");
 #endif
   powerOn();
 }
