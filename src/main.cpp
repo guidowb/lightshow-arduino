@@ -40,10 +40,12 @@ void setup() {
   // dots(darkred, 8);
   // dots(purple, 8, 4);
 #ifdef MEGA
-  dots(warm, 8);
-  dots(red, 8, 4);
+  // dots(warm, 8);
+  // dots(red, 8, 4);
+  setPattern("solid #000001\ntwinkle #fff");
 #else
-  setPattern("solid 0xd61");
+  setPattern("solid #d61");
+  // solid(office);
 #endif
   powerOn();
 }
