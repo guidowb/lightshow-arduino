@@ -23,11 +23,14 @@ const char *office  = "solid #d61";
 PowerManager powerManager;
 LEDStringManager ledStringManager(&powerManager);
 WiFiManager wifiManager;
-ConnectionManager connectionManager("wss://api.lightshow.guidowb.online/connect");
+ConnectionManager connectionManager("wss://api.lightshow.guidowb.online:443/connect");
 CommandHandler commandHandler(&ledStringManager);
 
 void setup() {
   // put your setup code here, to run once:
+  Serial.begin(9600);
+  while (!Serial) ;
+  Serial.println("Started");
   powerManager.setup();
   ledStringManager.setup();
   wifiManager.setup();

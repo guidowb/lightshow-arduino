@@ -11,6 +11,8 @@ void WiFiManager::setup() {
         WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     }
     WiFi.setAutoReconnect(true);
+    while (WiFi.status() != WL_CONNECTED) { Serial.print("."); delay(1000); }
+    Serial.println("\nConnected to WiFi");
 }
 
 void WiFiManager::loop() {

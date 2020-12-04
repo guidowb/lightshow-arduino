@@ -24,9 +24,15 @@ ConnectionManager::ConnectionManager(const char *url) {
 
 void ConnectionManager::setup() {
     manager = this;
+    client.addHeader("Origin", "lightshow-arduino");
     client.onEvent(onEventsCallback);
     client.onMessage(onMessageCallback);
-    client.connect(url);
+    if (client.connect(url)) {
+        Serial.println("Websocket connected");
+    }
+    else {
+        Serial.println("Failed to connect websocket");
+    }
 }
 
 void ConnectionManager::loop() {
