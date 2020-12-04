@@ -1,56 +1,50 @@
 #include <Arduino.h>
 #include <FastLED.h>
 
-extern void initializePower();
-extern void powerOn();
-extern void powerOff();
-
-extern void initializeString();
-extern void updateString();
-extern void setPattern(const char *pattern);
-extern void solid(CRGB color);
-extern void dots(CRGB color, int interval, int offset = 0);
+#include <PowerManager.h>
+#include <LEDStringManager.h>
+#include <WiFiManager.h>
+#include <ConnectionManager.h>
+#include <CommandHandler.h>
 
 /**************************************************************************************/
-/* Colors                                                                             */
+/* Patterns                                                                           */
 /**************************************************************************************/
 
-CRGB black     = CRGB(0x00000000);
-CRGB darkgrey  = CRGB(0x00202020);
-CRGB halloween = CRGB(0x00FF3F00);
-CRGB red       = CRGB(0x00DD0000);
-CRGB darkred   = CRGB(0x00C00000);
-CRGB purple    = CRGB(0x00400090);
-CRGB limegreen = CRGB(0x0080FF00);
-CRGB warm      = CRGB(0x00DD7722);
-CRGB office    = CRGB(0x00DD6611);
+const char *twinkle = "solid #001\ntwinkle #fff 1200";
+const char *xmas1 = "dots 4 #00f #a0a #d40 #d00 #0d0";
+const char *xmas2 = "dots 4 #d00 #0d0 #d61";
+const char *office  = "solid #d61";
 
 /**************************************************************************************/
 /* Main                                                                               */
 /**************************************************************************************/
 
+PowerManager powerManager;
+LEDStringManager ledStringManager(&powerManager);
+WiFiManager wifiManager;
+ConnectionManager connectionManager("wss://api.lightshow.guidowb.online/connect");
+CommandHandler commandHandler(&ledStringManager);
+
 void setup() {
   // put your setup code here, to run once:
-  initializePower();
-  initializeString();
-  // solid(black);
-  // solid(warm);
-  // dots(limegreen, 4, 2);
-  // dots(halloween, 4);
-  // dots(darkred, 8);
-  // dots(purple, 8, 4);
+  powerManager.setup();
+  ledStringManager.setup();
+  wifiManager.setup();
+  connectionManager.add(&commandHandler);
+  connectionManager.setup();
+
 #ifdef MEGA
-  // dots(warm, 8);
-  // dots(red, 8, 4);
-  setPattern("solid #000001\ntwinkle #fff");
+  ledStringManager.setPattern(xmas2);
 #else
-  setPattern("solid #d61");
-  // solid(office);
+  ledStringManager.setPattern(office);
 #endif
-  powerOn();
+
+  powerManager.powerOn();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  updateString();
+  powerManager.loop();
+  ledStringManager.loop();
 }

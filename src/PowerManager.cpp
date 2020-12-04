@@ -1,10 +1,6 @@
-/**************************************************************************************/
-/* Power management                                                                   */
-/**************************************************************************************/
+#include "PowerManager.h"
 
 #include <Arduino.h>
-
-bool power = false;
 
 #ifdef MEGA
 const int voltagePin = A0;
@@ -22,23 +18,23 @@ const int LED_ON = LOW;
 const int LED_OFF = HIGH;
 #endif
 
-void initializePower() {
+void PowerManager::setup() {
   pinMode(controlPin, OUTPUT);
   pinMode(LED_BUILTIN, OUTPUT);
-
-  // Todo - read power state from EEPROM and revert to that state
+  digitalWrite(controlPin, LOW);
+  powered = false;
 }
 
-bool checkPower() {
+void PowerManager::loop() {
   int minVoltage = 50;
   int voltage = analogRead(voltagePin);
   // If we're supposed to be powered, and we are, return true
-  if (power && voltage > minVoltage) return true;
+  if (powered && voltage > minVoltage) return;
   // If we're not powered, return false
   if (voltage <= minVoltage) {
-    power = false;
+    powered = false;
     digitalWrite(LED_BUILTIN, LED_OFF);
-    return false;
+    return;
   }
   // Else, we're in the process of powering on
   int timeout = 50; // We'll wait up to 5 seconds for the power voltage to rise
@@ -48,8 +44,8 @@ bool checkPower() {
       powerChecks++;
       if (powerChecks > 5) { // We want to see five consecutive high checks
         digitalWrite(LED_BUILTIN, LED_ON);
-        power = true;
-        return true;
+        powered = true;
+        return;
       }
     } else {
       powerChecks = 0;
@@ -58,12 +54,11 @@ bool checkPower() {
     voltage = analogRead(voltagePin);
     timeout--;
   }
-  power = false;
+  powered = false;
   digitalWrite(LED_BUILTIN, LED_OFF);
-  return false;
 }
 
-void powerOn() {
+void PowerManager::powerOn() {
   digitalWrite(controlPin, HIGH);
   int voltage = analogRead(voltagePin);
   int timeout = 50; // We'll wait up to 5 seconds for the power voltage to rise
@@ -72,7 +67,7 @@ void powerOn() {
     if (voltage > 400) {
       powerChecks++;
       if (powerChecks > 5) { // We want to see five consecutive high checks
-        power = true;
+        powered = true;
         return;
       }
     } else {
@@ -84,17 +79,21 @@ void powerOn() {
   }
 }
 
-void powerOff() {
+void PowerManager::powerOff() {
   digitalWrite(controlPin, LOW);
   int voltage = analogRead(voltagePin);
   int timeout = 100; // We'll wait up to 10 seconds for the power voltage to drop
   while (timeout > 0) {
     if (voltage < 40) {
-      power = false;
+      powered = false;
       return;
     }
     delay(100);
     voltage = analogRead(voltagePin);
     timeout--;
   }
+}
+
+bool PowerManager::hasPower() {
+  return this->powered;
 }
