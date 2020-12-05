@@ -59,8 +59,9 @@ void LEDString::setPixel(int pixel, RGBA color) {
   LED(pixel) = CRGB(r, g, b);
 }
 
-LEDStringManager::LEDStringManager(PowerManager *power) {
+LEDStringManager::LEDStringManager(PowerManager *power, ConnectionManager *connection) {
   this->power = power;
+  this->connection = connection;
   this->renderer = NULL;
   this->string = &canvas;
 }
@@ -78,6 +79,13 @@ void LEDStringManager::resetStats() {
 }
 
 void LEDStringManager::sendStats(bool final) {
+  if (!connection) return;
+  long millisCurrent = millis();
+  long millisTotal = millisCurrent - millisStarted;
+  int fps = (frames * 1000) / millisTotal;
+  int render = (millisTotal * 100) / millisInRender;
+  int update = (millisTotal * 100) / millisInUpdate;
+  connection->send("stats%s fps=%d, render%%=%d, update%%=%d", final ? " (final)" : "", fps, render, update);
 }
 
 void LEDStringManager::loop() {
@@ -96,6 +104,11 @@ void LEDStringManager::loop() {
     resetStats();
     digitalWrite(DATA_PIN_RIGHT, LOW);
     digitalWrite(DATA_PIN_LEFT, LOW);
+  }
+  long currentTime = millis();
+  if (currentTime - lastStats >= 30000) {
+    // sendStats();
+    lastStats = currentTime;
   }
 }
 

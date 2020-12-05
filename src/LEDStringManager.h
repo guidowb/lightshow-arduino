@@ -6,7 +6,7 @@
 
 class LEDStringManager{
 public:
-  LEDStringManager(PowerManager *power);
+  LEDStringManager(PowerManager *power, ConnectionManager *connection);
 
   void setup();
   void loop();
@@ -14,12 +14,14 @@ public:
 
 private:
   PowerManager *power;
+  ConnectionManager *connection;
   Renderer *renderer;
   Canvas *string;
   long millisStarted;
   long millisInRender;
   long millisInUpdate;
   long frames;
+  long lastStats;
 
   void resetStats();
   void sendStats(bool final = false);

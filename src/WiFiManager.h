@@ -5,6 +5,12 @@ class WiFiManager {
 public:
     void setup();
     void loop();
+
+private:
+    bool connected;
+    long lastConnect;
+    
+    void connect();
 };
 
 #endif

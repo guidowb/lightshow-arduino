@@ -6,24 +6,12 @@
 #include <WiFiManager.h>
 #include <ConnectionManager.h>
 #include <CommandHandler.h>
+#include <Patterns.h>
 
-/**************************************************************************************/
-/* Patterns                                                                           */
-/**************************************************************************************/
-
-const char *twinkle = "solid #001\ntwinkle #fff 1200";
-const char *xmas1 = "dots 4 #00f #a0a #d40 #d00 #0d0";
-const char *xmas2 = "dots 4 #d00 #0d0 #d61";
-const char *office  = "solid #d61";
-
-/**************************************************************************************/
-/* Main                                                                               */
-/**************************************************************************************/
-
-PowerManager powerManager;
-LEDStringManager ledStringManager(&powerManager);
 WiFiManager wifiManager;
-ConnectionManager connectionManager("wss://api.lightshow.guidowb.online:443/connect");
+ConnectionManager connectionManager("https://api.lightshow.guidowb.online/connect");
+PowerManager powerManager;
+LEDStringManager ledStringManager(&powerManager, NULL);
 CommandHandler commandHandler(&ledStringManager);
 
 void setup() {
@@ -31,23 +19,22 @@ void setup() {
   Serial.begin(9600);
   while (!Serial) ;
   Serial.println("Started");
+  Serial.printf("Free Memory: %d\n", ESP.getFreeHeap());
+
   powerManager.setup();
   ledStringManager.setup();
   wifiManager.setup();
   connectionManager.add(&commandHandler);
   connectionManager.setup();
 
-#ifdef MEGA
-  ledStringManager.setPattern(xmas2);
-#else
-  ledStringManager.setPattern(office);
-#endif
-
+  ledStringManager.setPattern(PATTERN);
   powerManager.powerOn();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
+  wifiManager.loop();
+  connectionManager.loop();
   powerManager.loop();
   ledStringManager.loop();
 }

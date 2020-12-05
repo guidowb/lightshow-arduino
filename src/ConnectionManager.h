@@ -18,11 +18,17 @@ public:
     void loop();
 
     void add(MessageHandler *handler);
+    void send(const char *fmt, ...);
     void handleMessage(const char *message);
+    void connect();
+    void setConnected(bool connected);
 
 private:
+    bool connected;
     const char *url;
     MessageHandler *handler;
+    long lastUpdate;
+    long lastConnect;
 };
 
 #endif
