@@ -11,7 +11,7 @@
 WiFiManager wifiManager;
 ConnectionManager connectionManager("https://api.lightshow.guidowb.online/connect");
 PowerManager powerManager;
-LEDStringManager ledStringManager(&powerManager, NULL);
+LEDStringManager ledStringManager(&powerManager, &connectionManager);
 CommandHandler commandHandler(&ledStringManager);
 
 void setup() {

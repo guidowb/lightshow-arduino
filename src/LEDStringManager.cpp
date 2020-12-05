@@ -83,8 +83,8 @@ void LEDStringManager::sendStats(bool final) {
   long millisCurrent = millis();
   long millisTotal = millisCurrent - millisStarted;
   int fps = (frames * 1000) / millisTotal;
-  int render = (millisTotal * 100) / millisInRender;
-  int update = (millisTotal * 100) / millisInUpdate;
+  int render = (millisInRender * 100) / millisTotal;
+  int update = (millisInUpdate * 100) / millisTotal;
   connection->send("stats%s fps=%d, render%%=%d, update%%=%d", final ? " (final)" : "", fps, render, update);
 }
 
@@ -107,7 +107,7 @@ void LEDStringManager::loop() {
   }
   long currentTime = millis();
   if (currentTime - lastStats >= 30000) {
-    // sendStats();
+    sendStats();
     lastStats = currentTime;
   }
 }

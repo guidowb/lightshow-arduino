@@ -9,7 +9,9 @@ static ConnectionManager *manager;
 
 void onMessageCallback(WebsocketsMessage message) {
     Serial.println("Received message");
-    manager->handleMessage(message.c_str());
+    const char *str = message.c_str();
+    Serial.println(str);
+    manager->handleMessage(str);
 }
 
 void onEventsCallback(WebsocketsEvent event, String data) {
@@ -77,6 +79,7 @@ void ConnectionManager::handleMessage(const char *message) {
     MessageHandler *handler = this->handler;
     while (handler != NULL) {
         if (handler->handleMessage(message)) return;
+        handler = handler->next;
     }
     Serial.println("No handler for message");
 }
@@ -87,9 +90,12 @@ void ConnectionManager::add(MessageHandler *handler) {
 }
 
 void ConnectionManager::send(const char *fmt, ...) {
-    // va_list args;
-    // char buffer[1024];
-    // sprintf(buffer, fmt, args);
-    // client.send(buffer);
-    // lastUpdate = millis();
+    va_list args;
+    va_start(args, fmt);
+    char buffer[1024];
+    vsprintf(buffer, fmt, args);
+    Serial.printf("Sending message: %s\n", buffer);
+    client.send(buffer);
+    lastUpdate = millis();
+    va_end(args);
 }
