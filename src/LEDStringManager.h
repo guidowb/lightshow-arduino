@@ -1,6 +1,7 @@
 #ifndef _LEDSTRING_MANAGER_H_
 #define _LEDSTRING_MANAGER_H_
 
+#include "ConnectionManager.h"
 #include "PowerManager.h"
 #include "LightShow.h"
 
@@ -22,9 +23,11 @@ private:
   long millisInUpdate;
   long frames;
   long lastStats;
+  long lastLit;
 
   void resetStats();
   void sendStats(bool final = false);
+  bool isLit();
 };
 
 #endif

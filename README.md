@@ -1,14 +1,16 @@
 # Lightshow for Arduino
 
-## Code Structure
+## Upcoming Features
+
+- More patterns!
+- Per client patterns (on server side)
+- Power control
+- Server detects inactivity and disconnects
+- OTA updates
+
 
 
 ## Interesting Learnings
-
-The ESP8266 WiFi will be really unstable while powered via USB. I was seeing
-disconnects every 5 seconds or so, and an occasional failure to reconnect.
-Applying external power solved that problem. This was NOT because of the WiFi
-going to sleep; turning sleep mode off did not solve the problem.
 
 When the WiFi disconnects underneath the websocket library, websockets does
 not notice. It will continue to happily accept ping() invocations, and will

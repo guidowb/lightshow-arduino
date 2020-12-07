@@ -12,7 +12,7 @@ private:
 
 class ConnectionManager {
 public:
-    ConnectionManager(const char *url);
+    ConnectionManager(const char *url, const char *program);
 
     void setup();
     void loop();
@@ -26,6 +26,7 @@ public:
 private:
     bool connected;
     const char *url;
+    const char *program;
     MessageHandler *handler;
     long lastUpdate;
     long lastConnect;

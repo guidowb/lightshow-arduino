@@ -9,7 +9,7 @@
 #include <Patterns.h>
 
 WiFiManager wifiManager;
-ConnectionManager connectionManager("https://api.lightshow.guidowb.online/connect");
+ConnectionManager connectionManager("https://api.lightshow.guidowb.online/connect", PROGRAM);
 PowerManager powerManager;
 LEDStringManager ledStringManager(&powerManager, &connectionManager);
 CommandHandler commandHandler(&ledStringManager);
@@ -28,7 +28,6 @@ void setup() {
   connectionManager.setup();
 
   ledStringManager.setPattern(PATTERN);
-  powerManager.powerOn();
 }
 
 void loop() {

@@ -2,18 +2,22 @@
 
 #include <FastLED.h>
 
-#ifdef MEGA
+#ifdef FRONT_STRINGS
 #define NUM_LEDS_PER_STRING 150
 #define NUM_STRINGS_LEFT      4
 #define NUM_STRINGS_RIGHT     3
-#define DATA_PIN_LEFT  7
-#define DATA_PIN_RIGHT 6
 #else
 #define NUM_LEDS_PER_STRING 201
 #define NUM_STRINGS_LEFT      0
 #define NUM_STRINGS_RIGHT     1
+#endif
+
+#ifdef MEGA
+#define DATA_PIN_LEFT  7
+#define DATA_PIN_RIGHT 6
+#else
 #define DATA_PIN_LEFT  D6
-#define DATA_PIN_RIGHT D5
+#define DATA_PIN_RIGHT D3
 #endif
 
 #define NUM_LEDS_LEFT  (NUM_STRINGS_LEFT  * NUM_LEDS_PER_STRING)
@@ -28,6 +32,7 @@ public:
   virtual void setPixel(int pixel, RGBA color);
 
 private:
+  friend class LEDStringManager;
   CRGB leds[NUM_LEDS];
 };
 
@@ -70,6 +75,13 @@ void LEDStringManager::setup() {
   resetStats();
 }
 
+bool LEDStringManager::isLit() {
+  for (int p = 0; p < NUM_LEDS; p++) {
+    if (canvas.LED(p) != CRGB(0)) return true;
+  }
+  return false;
+}
+
 void LEDStringManager::resetStats() {
   if (this->frames != 0) sendStats(true);
   this->millisStarted = millis();
@@ -82,6 +94,7 @@ void LEDStringManager::sendStats(bool final) {
   if (!connection) return;
   long millisCurrent = millis();
   long millisTotal = millisCurrent - millisStarted;
+  if (millisTotal == 0) millisTotal = 1; // Avoid division by zero
   int fps = (frames * 1000) / millisTotal;
   int render = (millisInRender * 100) / millisTotal;
   int update = (millisInUpdate * 100) / millisTotal;
@@ -89,12 +102,19 @@ void LEDStringManager::sendStats(bool final) {
 }
 
 void LEDStringManager::loop() {
+
+  // Render
   if (renderer) {
     long startTime = millis();
     renderer->render(string);
     millisInRender += millis() - startTime;
   }
-  if (power->hasPower()) {
+
+  // Manage power based on lit LEDs
+  if (isLit()) power->isNeeded();
+
+  // Update the string
+  if (power->isPowered()) {
     long startTime = millis();
     FastLED.show();
     millisInUpdate += millis() - startTime;
@@ -104,7 +124,10 @@ void LEDStringManager::loop() {
     resetStats();
     digitalWrite(DATA_PIN_RIGHT, LOW);
     digitalWrite(DATA_PIN_LEFT, LOW);
+    delay(100);
   }
+
+  // Update server stats
   long currentTime = millis();
   if (currentTime - lastStats >= 30000) {
     sendStats();

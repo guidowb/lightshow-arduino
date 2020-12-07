@@ -7,7 +7,7 @@ const int voltagePin = A0;
 const int controlPin = 10;
 #else
 const int voltagePin = A0;
-const int controlPin = D8;
+const int controlPin = D7;
 #endif
 
 #ifdef MEGA
@@ -18,82 +18,91 @@ const int LED_ON = LOW;
 const int LED_OFF = HIGH;
 #endif
 
+PowerManager::PowerManager() : powerCheck(100) {
+  setState(POWERED_OFF);
+  lastNeeded = millis() - 30000;
+}
+
 void PowerManager::setup() {
   pinMode(controlPin, OUTPUT);
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(controlPin, LOW);
-  powered = false;
+  digitalWrite(LED_BUILTIN, LED_OFF);
+  setState(POWERING_OFF);
 }
 
 void PowerManager::loop() {
-  int minVoltage = 50;
+  switch (getState()) {
+  case POWERED_OFF:  checkNeeded();   break;
+  case POWERING_OFF: checkPowerOff(); break;
+  case POWERING_ON:  checkPowerOn();  break;
+  case POWERED_ON:   checkPowered();  break;
+  }
+}
+
+void PowerManager::checkPowerOff() {
+  if (!powerCheck.due()) return;
   int voltage = analogRead(voltagePin);
-  // If we're supposed to be powered, and we are, return true
-  if (powered && voltage > minVoltage) return;
-  // If we're not powered, return false
-  if (voltage <= minVoltage) {
-    powered = false;
+  if (voltage < 40) {
+    Serial.println("Powered off");
+    setState(POWERED_OFF);
     digitalWrite(LED_BUILTIN, LED_OFF);
+  }
+}
+
+void PowerManager::checkPowerOn() {
+  if (!powerCheck.due()) return;
+  int voltage = analogRead(voltagePin);
+  if (voltage > 400) {
+    if (timeInState(500)) {
+      Serial.println("Powered on");
+      setState(POWERED_ON);
+      digitalWrite(LED_BUILTIN, LED_ON);
+    }
+  }
+  else {
+    setState(POWERING_ON);
+  }
+}
+
+void PowerManager::checkPowered() {
+  if (millis() - lastNeeded > 30000) {
+    powerOff();
     return;
   }
-  // Else, we're in the process of powering on
-  int timeout = 50; // We'll wait up to 5 seconds for the power voltage to rise
-  int powerChecks = 0;
-  while (timeout > 0) {
-    if (voltage > minVoltage) {
-      powerChecks++;
-      if (powerChecks > 5) { // We want to see five consecutive high checks
-        digitalWrite(LED_BUILTIN, LED_ON);
-        powered = true;
-        return;
-      }
-    } else {
-      powerChecks = 0;
-    }
-    delay(100);
-    voltage = analogRead(voltagePin);
-    timeout--;
+  int voltage = analogRead(voltagePin);
+  if (voltage <= 400) {
+    Serial.println("Power lost");
+    setState(POWERING_ON);
+    digitalWrite(LED_BUILTIN, LED_OFF);
+    powerCheck.reset();
   }
-  powered = false;
-  digitalWrite(LED_BUILTIN, LED_OFF);
+}
+
+void PowerManager::checkNeeded() {
+  if (millis() - lastNeeded < 5000) {
+    powerOn();
+  } 
 }
 
 void PowerManager::powerOn() {
+  Serial.println("Power on");
+  setState(POWERING_ON);
   digitalWrite(controlPin, HIGH);
-  int voltage = analogRead(voltagePin);
-  int timeout = 50; // We'll wait up to 5 seconds for the power voltage to rise
-  int powerChecks = 0;
-  while (timeout > 0) {
-    if (voltage > 400) {
-      powerChecks++;
-      if (powerChecks > 5) { // We want to see five consecutive high checks
-        powered = true;
-        return;
-      }
-    } else {
-      powerChecks = 0;
-    }
-    delay(100);
-    voltage = analogRead(voltagePin);
-    timeout--;
-  }
+  powerCheck.reset();
 }
 
 void PowerManager::powerOff() {
+  Serial.println("Power off");
+  setState(POWERING_OFF);
   digitalWrite(controlPin, LOW);
-  int voltage = analogRead(voltagePin);
-  int timeout = 100; // We'll wait up to 10 seconds for the power voltage to drop
-  while (timeout > 0) {
-    if (voltage < 40) {
-      powered = false;
-      return;
-    }
-    delay(100);
-    voltage = analogRead(voltagePin);
-    timeout--;
-  }
+  powerCheck.reset();
 }
 
-bool PowerManager::hasPower() {
-  return this->powered;
+bool PowerManager::isPowered() {
+  return getState() == POWERED_ON;
+}
+
+void PowerManager::isNeeded() {
+  this->lastNeeded = millis();
 }

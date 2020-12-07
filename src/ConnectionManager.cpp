@@ -33,15 +33,16 @@ void onEventsCallback(WebsocketsEvent event, String data) {
     }
 }
 
-ConnectionManager::ConnectionManager(const char *url) {
+ConnectionManager::ConnectionManager(const char *url, const char *program) {
     this->url = url;
+    this->program = program;
     this->connected = false;
 }
 
 void ConnectionManager::setup() {
     manager = this;
     client.addHeader("Origin", "lightshow-arduino");
-    client.addHeader("Cookie", String("macAddress=") + WiFi.macAddress());
+    client.addHeader("Cookie", String("macAddress=") + WiFi.macAddress() + "; program=" + program);
     client.onEvent(onEventsCallback);
     client.onMessage(onMessageCallback);
     connect();

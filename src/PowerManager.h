@@ -1,19 +1,30 @@
 #ifndef _POWER_MANAGER_H_
 #define _POWER_MANAGER_H_
 
-#include "ConnectionManager.h"
+#include "StateMachine.h"
+#include "RateLimiter.h"
 
-class PowerManager {
+class PowerManager : private StateMachine {
 public:
+    PowerManager();
+
     void setup();
     void loop();
 
-    bool hasPower();
+    bool isPowered();
+    void isNeeded();
     void powerOn();
     void powerOff();
 
 private:
-    bool powered;
+    enum State { POWERED_OFF, POWERING_OFF, POWERING_ON, POWERED_ON };
+    RateLimiter powerCheck;
+    long lastNeeded;
+
+    void checkPowerOn();
+    void checkPowerOff();
+    void checkPowered();
+    void checkNeeded();
 };
 
 #endif

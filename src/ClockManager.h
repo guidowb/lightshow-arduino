@@ -3,8 +3,8 @@
 
 class ClockManager {
 public:
-    void setup();
-    void loop();
+    static void setup();
+    static void loop();
 };
 
 #endif
