@@ -8,6 +8,8 @@ const int controlPin = 10;
 #else
 const int voltagePin = A0;
 const int controlPin = D7;
+const int offVoltage = 40;
+const int onVoltage = 200;
 #endif
 
 #ifdef MEGA
@@ -43,17 +45,22 @@ void PowerManager::loop() {
 void PowerManager::checkPowerOff() {
   if (!powerCheck.due()) return;
   int voltage = analogRead(voltagePin);
-  if (voltage < 40) {
+  if (voltage < offVoltage) {
     Serial.println("Powered off");
     setState(POWERED_OFF);
     digitalWrite(LED_BUILTIN, LED_OFF);
+  }
+  else if (timeInState(1000) && voltage > onVoltage) {
+    Serial.println("Power is not managed");
+    setState(POWER_UNMANAGED);
+    digitalWrite(LED_BUILTIN, LED_ON);
   }
 }
 
 void PowerManager::checkPowerOn() {
   if (!powerCheck.due()) return;
   int voltage = analogRead(voltagePin);
-  if (voltage > 400) {
+  if (voltage > onVoltage) {
     if (timeInState(500)) {
       Serial.println("Powered on");
       setState(POWERED_ON);
@@ -71,7 +78,7 @@ void PowerManager::checkPowered() {
     return;
   }
   int voltage = analogRead(voltagePin);
-  if (voltage <= 400) {
+  if (voltage <= onVoltage) {
     Serial.println("Power lost");
     setState(POWERING_ON);
     digitalWrite(LED_BUILTIN, LED_OFF);
@@ -100,7 +107,7 @@ void PowerManager::powerOff() {
 }
 
 bool PowerManager::isPowered() {
-  return getState() == POWERED_ON;
+  return getState() == POWERED_ON || getState() == POWER_UNMANAGED;
 }
 
 void PowerManager::isNeeded() {

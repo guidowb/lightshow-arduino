@@ -17,7 +17,7 @@ public:
     void powerOff();
 
 private:
-    enum State { POWERED_OFF, POWERING_OFF, POWERING_ON, POWERED_ON };
+    enum State { POWERED_OFF, POWERING_OFF, POWERING_ON, POWERED_ON, POWER_UNMANAGED };
     RateLimiter powerCheck;
     long lastNeeded;
 

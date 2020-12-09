@@ -6,10 +6,12 @@
 #define NUM_LEDS_PER_STRING 150
 #define NUM_STRINGS_LEFT      4
 #define NUM_STRINGS_RIGHT     3
+#define NUM_BUFFER_LEDS       1
 #else
 #define NUM_LEDS_PER_STRING 201
 #define NUM_STRINGS_LEFT      0
 #define NUM_STRINGS_RIGHT     1
+#define NUM_BUFFER_LEDS       0
 #endif
 
 #ifdef MEGA
@@ -17,12 +19,13 @@
 #define DATA_PIN_RIGHT 6
 #else
 #define DATA_PIN_LEFT  D6
-#define DATA_PIN_RIGHT D3
+#define DATA_PIN_RIGHT D5
 #endif
 
-#define NUM_LEDS_LEFT  (NUM_STRINGS_LEFT  * NUM_LEDS_PER_STRING)
-#define NUM_LEDS_RIGHT (NUM_STRINGS_RIGHT * NUM_LEDS_PER_STRING)
+#define NUM_LEDS_LEFT  (NUM_BUFFER_LEDS + NUM_STRINGS_LEFT  * NUM_LEDS_PER_STRING)
+#define NUM_LEDS_RIGHT (NUM_BUFFER_LEDS + NUM_STRINGS_RIGHT * NUM_LEDS_PER_STRING)
 #define NUM_LEDS       (NUM_LEDS_LEFT + NUM_LEDS_RIGHT)
+#define NUM_VISIBLE    (NUM_LEDS - NUM_BUFFER_LEDS * 2)
 
 class LEDString : public Canvas {
 public:
@@ -38,7 +41,19 @@ private:
 
 static LEDString canvas;
 
-#define LED(i) leds[ ((i) < NUM_LEDS_LEFT) ? (NUM_LEDS_LEFT - (i) - 1) : (i) ]
+// Without buffer:
+// LED(0)    -> 600 -   0 - 1 -> 599   The fartest to the left
+// LED(599)  -> 600 - 599 - 1 ->   0   The nearest to the left
+// LED(600)  -> 600                    The nearest to the right
+// LED(1049) -> 1049                   The fartest to the right
+
+// With buffer:
+// LED(0)    -> 601 -   0 - 1 ->  600   The fartest visible to the left
+// LED(599)  -> 601 - 599 - 1 ->    1   The nearest visible to the left
+// LED(600)  -> 600       + 2 ->  602   The nearest visible to the right
+// LED(1049) -> 1049      + 2 -> 1051   The fartest visible to the right
+
+#define LED(i) leds[ ((i) < NUM_LEDS_LEFT) ? (NUM_LEDS_LEFT - (i) - 1) : ((i) + NUM_BUFFER_LEDS * 2) ]
 
 LEDString::LEDString() {
   FastLED.addLeds<NEOPIXEL, DATA_PIN_LEFT >(leds, 0, NUM_LEDS_LEFT);
@@ -46,7 +61,7 @@ LEDString::LEDString() {
 }
 
 int LEDString::getSize() {
-  return NUM_LEDS;
+  return NUM_VISIBLE;
 }
 
 long LEDString::getTime() {
