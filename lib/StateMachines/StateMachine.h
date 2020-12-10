@@ -5,11 +5,11 @@ class StateMachine {
 public:
     void setState(int state);
     int  getState();
-    bool timeInState(long threshold);
+    bool timeInState(unsigned long threshold);
 
 private:
-    int  state;
-    long stateEntered;
+    int state;
+    unsigned long stateEntered;
 };
 
 #endif

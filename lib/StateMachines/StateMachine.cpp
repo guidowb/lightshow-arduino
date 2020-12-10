@@ -11,6 +11,6 @@ int StateMachine::getState() {
     return this->state;
 }
 
-bool StateMachine::timeInState(long threshold) {
+bool StateMachine::timeInState(unsigned long threshold) {
     return (millis() - this->stateEntered) > threshold;
 }
