@@ -7,52 +7,70 @@
 
 #include <wifi.h> // Secrets that live outside the repo
 
-WiFiManager::WiFiManager() : connectionCheck(100), connectionAttempt(5000) {
-
-}
+WiFiManager::WiFiManager() : connectionCheck(100), connectionAttempt(5000) {}
 
 void WiFiManager::setup() {
     WiFi.mode(WIFI_STA);
     WiFi.setSleepMode(WIFI_NONE_SLEEP);
-    WiFi.setAutoReconnect(false);
+    WiFi.setAutoReconnect(true);
+    WiFi.persistent(true);
     setState(WIFI_CONNECTING);
 }
 
 void WiFiManager::loop() {
     switch (getState()) {
-    case WIFI_DISCONNECTED: tryConnecting(); break;
-    case WIFI_CONNECTING:   checkConnected(); break;
-    case WIFI_CONNECTED:    checkConnection(); break;
+    case WIFI_DISCONNECTED: whileDisconnected(); break;
+    case WIFI_CONNECTING:   whileConnecting();   break;
+    case WIFI_CONNECTED:    whileConnected();    break;
     }
 }
 
-void WiFiManager::tryConnecting() {
-    if (!connectionAttempt.due()) return;
-    Serial.println("WIFI trying to Connect ...");
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-    setState(WIFI_CONNECTING);
+void WiFiManager::enterDisconnected() {
+    setState(WIFI_DISCONNECTED);
+    Serial.println("WIFI disconnected");
+    connectionAttempt.reset();
 }
 
-void WiFiManager::checkConnected() {
+void WiFiManager::whileDisconnected() {
+    if (connectionCheck.due()) {
+        if (WiFi.status() == WL_CONNECTED) {
+            enterConnected();
+            return;
+        }
+    }
+    if (connectionAttempt.due()) {
+        enterConnecting();
+        return;
+    }
+}
+
+void WiFiManager::enterConnecting() {
+    setState(WIFI_CONNECTING);
+    Serial.println("WIFI trying to connect ...");
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+}
+
+void WiFiManager::whileConnecting() {
     if (!connectionCheck.due()) return;
     if (WiFi.status() == WL_CONNECTED) {
-        Serial.printf("WIFI connected to %s\n", WiFi.SSID().c_str());
-        setState(WIFI_CONNECTED);
+        enterConnected();
         return;
     }
     if (timeInState(30000)) {
-        Serial.println("WIFI failed to connect");
-        connectionAttempt.reset();
-        setState(WIFI_DISCONNECTED);
+        enterConnecting();
         return;
     }
 }
 
-void WiFiManager::checkConnection() {
+void WiFiManager::enterConnected() {
+    Serial.printf("WIFI connected to %s\n", WiFi.SSID().c_str());
+    setState(WIFI_CONNECTED);
+}
+
+void WiFiManager::whileConnected() {
     if (!connectionCheck.due()) return;
     if (WiFi.status() == WL_CONNECTED) return;
-    Serial.println("WIFI disconnected");
-    setState(WIFI_DISCONNECTED);
+    enterDisconnected();
 }
 
 bool WiFiManager::isConnected() {

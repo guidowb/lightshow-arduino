@@ -17,10 +17,13 @@ private:
     enum State { WIFI_CONNECTING, WIFI_CONNECTED, WIFI_DISCONNECTED };
     RateLimiter connectionCheck;
     RateLimiter connectionAttempt;
-   
-    void tryConnecting();
-    void checkConnected();
-    void checkConnection();
+
+    void enterConnecting();
+    void whileConnecting();
+    void enterConnected();
+    void whileConnected();
+    void enterDisconnected();
+    void whileDisconnected();
 };
 
 #endif
