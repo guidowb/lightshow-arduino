@@ -22,10 +22,10 @@
 #define DATA_PIN_RIGHT D5
 #endif
 
-#define NUM_LEDS_LEFT  (NUM_BUFFER_LEDS + NUM_STRINGS_LEFT  * NUM_LEDS_PER_STRING)
-#define NUM_LEDS_RIGHT (NUM_BUFFER_LEDS + NUM_STRINGS_RIGHT * NUM_LEDS_PER_STRING)
+#define NUM_LEDS_LEFT  (NUM_STRINGS_LEFT  * NUM_LEDS_PER_STRING)
+#define NUM_LEDS_RIGHT (NUM_STRINGS_RIGHT * NUM_LEDS_PER_STRING)
 #define NUM_LEDS       (NUM_LEDS_LEFT + NUM_LEDS_RIGHT)
-#define NUM_VISIBLE    (NUM_LEDS - NUM_BUFFER_LEDS * 2)
+#define SIZE_LEDS      (NUM_LEDS + NUM_BUFFER_LEDS * 2)
 
 class LEDString : public Canvas {
 public:
@@ -36,7 +36,7 @@ public:
 
 private:
   friend class LEDStringManager;
-  CRGB leds[NUM_LEDS];
+  CRGB leds[SIZE_LEDS];
 };
 
 static LEDString canvas;
@@ -52,16 +52,22 @@ static LEDString canvas;
 // LED(599)  -> 601 - 599 - 1 ->    1   The nearest visible to the left
 // LED(600)  -> 600       + 2 ->  602   The nearest visible to the right
 // LED(1049) -> 1049      + 2 -> 1051   The fartest visible to the right
+// Left  buffer ->   0
+// Right buffer -> 601
 
 #define LED(i) leds[ ((i) < NUM_LEDS_LEFT) ? (NUM_LEDS_LEFT - (i) - 1) : ((i) + NUM_BUFFER_LEDS * 2) ]
 
 LEDString::LEDString() {
-  FastLED.addLeds<NEOPIXEL, DATA_PIN_LEFT >(leds, 0, NUM_LEDS_LEFT);
-  FastLED.addLeds<NEOPIXEL, DATA_PIN_RIGHT>(leds, NUM_LEDS_LEFT, NUM_LEDS_RIGHT);
+  FastLED.addLeds<NEOPIXEL, DATA_PIN_LEFT >(leds, 0, NUM_LEDS_LEFT + NUM_BUFFER_LEDS);
+  FastLED.addLeds<NEOPIXEL, DATA_PIN_RIGHT>(leds, NUM_LEDS_LEFT + NUM_BUFFER_LEDS, NUM_LEDS_RIGHT + NUM_BUFFER_LEDS);
+  if (NUM_BUFFER_LEDS > 0) {
+    if (NUM_LEDS_LEFT  > 0) leds[0]                 = CRGB(0x00dd0000);
+    if (NUM_LEDS_RIGHT > 0) leds[NUM_LEDS_LEFT + 1] = CRGB(0x0000dd00);
+  }
 }
 
 int LEDString::getSize() {
-  return NUM_VISIBLE;
+  return NUM_LEDS;
 }
 
 long LEDString::getTime() {
