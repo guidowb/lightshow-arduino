@@ -55,14 +55,14 @@ static LEDString canvas;
 // Left  buffer ->   0
 // Right buffer -> 601
 
-#define LED(i) leds[ ((i) < NUM_LEDS_LEFT) ? (NUM_LEDS_LEFT - (i) - 1) : ((i) + NUM_BUFFER_LEDS * 2) ]
+#define LED(i) leds[ ((i) < NUM_LEDS_LEFT) ? (NUM_LEDS_LEFT + NUM_BUFFER_LEDS - (i) - 1) : ((i) + NUM_BUFFER_LEDS * 2) ]
 
 LEDString::LEDString() {
   FastLED.addLeds<NEOPIXEL, DATA_PIN_LEFT >(leds, 0, NUM_LEDS_LEFT + NUM_BUFFER_LEDS);
   FastLED.addLeds<NEOPIXEL, DATA_PIN_RIGHT>(leds, NUM_LEDS_LEFT + NUM_BUFFER_LEDS, NUM_LEDS_RIGHT + NUM_BUFFER_LEDS);
   if (NUM_BUFFER_LEDS > 0) {
-    if (NUM_LEDS_LEFT  > 0) leds[0]                 = CRGB(0x00dd0000);
-    if (NUM_LEDS_RIGHT > 0) leds[NUM_LEDS_LEFT + 1] = CRGB(0x0000dd00);
+    if (NUM_LEDS_LEFT  > 0) leds[0]                 = CRGB(0);
+    if (NUM_LEDS_RIGHT > 0) leds[NUM_LEDS_LEFT + 1] = CRGB(0);
   }
 }
 
