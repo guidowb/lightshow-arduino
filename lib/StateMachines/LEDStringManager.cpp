@@ -132,7 +132,7 @@ void LEDStringManager::loop() {
   }
 
   // Manage power based on lit LEDs
-  if (isLit()) power->isNeeded();
+  if (isLit()) power->powerNeeded();
 
   // Update the string
   if (power->isPowered()) {

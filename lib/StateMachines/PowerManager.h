@@ -12,19 +12,29 @@ public:
     void loop();
 
     bool isPowered();
-    void isNeeded();
+
+    void powerNeeded();
     void powerOn();
     void powerOff();
 
 private:
-    enum State { POWERED_OFF, POWERING_OFF, POWERING_ON, POWERED_ON, POWER_UNMANAGED };
+    enum State { POWERED_OFF, POWERING_OFF, POWERING_ON, POWERED_ON, POWER_UNMANAGED, POWER_LOST };
     RateLimiter powerCheck;
+    RateLimiter autoShutoff;
     long lastNeeded;
 
-    void checkPowerOn();
-    void checkPowerOff();
-    void checkPowered();
-    void checkNeeded();
+    void enterPoweredOff();
+    void whilePoweredOff();
+    void enterPoweringOff();
+    void whilePoweringOff();
+    void enterPoweredOn();
+    void whilePoweredOn();
+    void enterPoweringOn();
+    void whilePoweringOn();
+    void enterUnmanaged();
+    void whileUnmanaged();
+    void enterPowerLost();
+    void whilePowerLost();
 };
 
 #endif
