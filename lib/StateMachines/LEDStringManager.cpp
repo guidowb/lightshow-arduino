@@ -1,5 +1,6 @@
 #include "LEDStringManager.h"
 
+#include <Arduino.h>
 #include <FastLED.h>
 
 #ifdef FRONT_STRINGS
@@ -30,9 +31,9 @@
 class LEDString : public Canvas {
 public:
   LEDString();
-  virtual int getSize();
-  virtual long getTime();
-  virtual void setPixel(int pixel, RGBA color);
+  virtual uint16_t getSize();
+  virtual uint32_t globalTime();
+  virtual void setPixel(uint16_t pixel, RGBA color);
 
 private:
   friend class LEDStringManager;
@@ -66,15 +67,15 @@ LEDString::LEDString() {
   }
 }
 
-int LEDString::getSize() {
+uint16_t LEDString::getSize() {
   return NUM_LEDS;
 }
 
-long LEDString::getTime() {
+uint32_t LEDString::globalTime() {
   return millis();
 }
 
-void LEDString::setPixel(int pixel, RGBA color) {
+void LEDString::setPixel(uint16_t pixel, RGBA color) {
   int r = (color >> 24) & 0x0ff;
   int g = (color >> 16) & 0x0ff;
   int b = (color >>  8) & 0x0ff;

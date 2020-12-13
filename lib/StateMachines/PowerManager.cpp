@@ -115,9 +115,12 @@ void PowerManager::enterPoweredOff() {
 }
 
 void PowerManager::whilePoweredOff() {
-  if (millis() - lastNeeded < 5000) {
-    enterPoweringOn();
-  } 
+  if (!powerCheck.due()) return;
+  int voltage = analogRead(voltagePin);
+  if (voltage > onVoltage) {
+    enterUnmanaged();
+    return;
+  }
 }
 
 void PowerManager::enterPowerLost() {
@@ -161,7 +164,7 @@ void PowerManager::powerOff() {
 
 void PowerManager::powerNeeded() {
   autoShutoff.reset();
-  if (!isPowered()) enterPoweringOn();
+  if (!isPowered() && getState() != POWERING_ON) enterPoweringOn();
 }
 
 bool PowerManager::isPowered() {

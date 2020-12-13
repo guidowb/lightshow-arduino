@@ -21,7 +21,6 @@ private:
     enum State { POWERED_OFF, POWERING_OFF, POWERING_ON, POWERED_ON, POWER_UNMANAGED, POWER_LOST };
     RateLimiter powerCheck;
     RateLimiter autoShutoff;
-    long lastNeeded;
 
     void enterPoweredOff();
     void whilePoweredOff();
