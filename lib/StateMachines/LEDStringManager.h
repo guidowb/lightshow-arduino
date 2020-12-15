@@ -3,11 +3,12 @@
 
 #include "ConnectionManager.h"
 #include "PowerManager.h"
+#include "ClockManager.h"
 #include "LightShow.h"
 
 class LEDStringManager{
 public:
-  LEDStringManager(PowerManager *power, ConnectionManager *connection);
+  LEDStringManager(PowerManager *power, ClockManager *clock, ConnectionManager *connection);
 
   void setup();
   void loop();
@@ -15,6 +16,7 @@ public:
 
 private:
   PowerManager *power;
+  ClockManager *clock;
   ConnectionManager *connection;
   Renderer *renderer;
   long millisStarted;

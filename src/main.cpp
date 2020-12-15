@@ -4,14 +4,16 @@
 #include <PowerManager.h>
 #include <LEDStringManager.h>
 #include <WiFiManager.h>
+#include <ClockManager.h>
 #include <ConnectionManager.h>
 #include <CommandHandler.h>
 #include <Patterns.h>
 
 WiFiManager wifiManager;
+ClockManager clockManager;
 ConnectionManager connectionManager("https://api.lightshow.guidowb.online/connect", PROGRAM);
 PowerManager powerManager;
-LEDStringManager ledStringManager(&powerManager, &connectionManager);
+LEDStringManager ledStringManager(&powerManager, &clockManager, &connectionManager);
 CommandHandler commandHandler(&ledStringManager);
 
 void setup() {
@@ -21,6 +23,7 @@ void setup() {
   powerManager.setup();
   ledStringManager.setup();
   wifiManager.setup();
+  clockManager.setup();
   connectionManager.add(&commandHandler);
   connectionManager.setup();
 
@@ -30,6 +33,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   wifiManager.loop();
+  clockManager.loop();
   connectionManager.loop();
   powerManager.loop();
   ledStringManager.loop();

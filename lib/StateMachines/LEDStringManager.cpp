@@ -33,6 +33,7 @@ public:
   LEDString();
   virtual uint16_t getSize();
   virtual uint32_t globalTime();
+  virtual uint32_t epochTime();
   virtual void setPixel(uint16_t pixel, RGBA color);
 
 public:
@@ -41,6 +42,7 @@ public:
 
 private:
   friend class LEDStringManager;
+  ClockManager *clock;
   CRGB leds[SIZE_LEDS];
 };
 
@@ -77,6 +79,10 @@ uint16_t LEDString::getSize() {
 
 uint32_t LEDString::globalTime() {
   return millis();
+}
+
+uint32_t LEDString::epochTime() {
+  return clock->getEpochTime();
 }
 
 void LEDString::setPixel(uint16_t pixel, RGBA color) {
@@ -123,10 +129,12 @@ void LEDString::gammaCorrect() {
   for (uint16_t p = 902; p < 1052; p++) leds[p] = gamma_1(leds[p]);
 }
 
-LEDStringManager::LEDStringManager(PowerManager *power, ConnectionManager *connection) {
+LEDStringManager::LEDStringManager(PowerManager *power, ClockManager *clock, ConnectionManager *connection) {
   this->power = power;
+  this->clock = clock;
   this->connection = connection;
   this->renderer = NULL;
+  canvas.clock = clock;
 }
 
 void LEDStringManager::setup() {
