@@ -91,22 +91,36 @@ void LEDString::erase() {
   for (uint16_t p = 0; p < NUM_LEDS; p++) leds[p] = 0;
 }
 
-CRGB gamma1(CRGB color) {
-  return CRGB(color.r, color.g, color.b);
+static uint8_t gamma_f(uint8_t in, uint8_t low, uint8_t mid, uint8_t high) {
+  if (in == 0) return 0;
+  else if (in < 128) return low + (mid - low) * (in - 1) / 128;
+  else return mid + (high - mid) * (in - 128) / 128;
 }
 
-CRGB gamma2(CRGB color) {
-  return CRGB(color.r, color.g, color.b);
+static CRGB gamma_1(CRGB color) {
+  return CRGB(
+    gamma_f(color.r, 4, 48, 170),
+    gamma_f(color.g, 6, 80, 255),
+    gamma_f(color.b, 4, 48, 240)
+  );
+}
+
+static CRGB gamma_2(CRGB color) {
+  return CRGB(
+    gamma_f(color.r, 1, 48, 221),
+    gamma_f(color.g, 2, 48, 221),
+    gamma_f(color.b, 1, 48, 221)
+  );
 }
 
 void LEDString::gammaCorrect() {
-  for (uint16_t p =   0; p <  150; p++) leds[p] = gamma1(leds[p]);
-  for (uint16_t p = 150; p <  300; p++) leds[p] = gamma2(leds[p]);
-  for (uint16_t p = 300; p <  450; p++) leds[p] = gamma2(leds[p]);
-  for (uint16_t p = 450; p <  600; p++) leds[p] = gamma1(leds[p]);
-  for (uint16_t p = 602; p <  752; p++) leds[p] = gamma2(leds[p]);
-  for (uint16_t p = 752; p <  902; p++) leds[p] = gamma1(leds[p]);
-  for (uint16_t p = 902; p < 1052; p++) leds[p] = gamma1(leds[p]);
+  for (uint16_t p =   0; p <  150; p++) leds[p] = gamma_1(leds[p]);
+  for (uint16_t p = 150; p <  300; p++) leds[p] = gamma_2(leds[p]);
+  for (uint16_t p = 300; p <  450; p++) leds[p] = gamma_2(leds[p]);
+  for (uint16_t p = 450; p <  600; p++) leds[p] = gamma_1(leds[p]);
+  for (uint16_t p = 602; p <  752; p++) leds[p] = gamma_2(leds[p]);
+  for (uint16_t p = 752; p <  902; p++) leds[p] = gamma_1(leds[p]);
+  for (uint16_t p = 902; p < 1052; p++) leds[p] = gamma_1(leds[p]);
 }
 
 LEDStringManager::LEDStringManager(PowerManager *power, ConnectionManager *connection) {
