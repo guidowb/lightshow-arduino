@@ -17,7 +17,6 @@ private:
   PowerManager *power;
   ConnectionManager *connection;
   Renderer *renderer;
-  Canvas *string;
   long millisStarted;
   long millisInRender;
   long millisInUpdate;

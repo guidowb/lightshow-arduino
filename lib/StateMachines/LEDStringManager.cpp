@@ -35,6 +35,10 @@ public:
   virtual uint32_t globalTime();
   virtual void setPixel(uint16_t pixel, RGBA color);
 
+public:
+  void erase();
+  void gammaCorrect();
+
 private:
   friend class LEDStringManager;
   CRGB leds[SIZE_LEDS];
@@ -76,21 +80,39 @@ uint32_t LEDString::globalTime() {
 }
 
 void LEDString::setPixel(uint16_t pixel, RGBA color) {
-  int r = (color >> 24) & 0x0ff;
-  int g = (color >> 16) & 0x0ff;
-  int b = (color >>  8) & 0x0ff;
-  int a = (color      ) & 0x0ff;
-  r = ((r * a) + (LED(pixel).r * (255 - a))) / 255;
-  g = ((g * a) + (LED(pixel).g * (255 - a))) / 255;
-  b = ((b * a) + (LED(pixel).b * (255 - a))) / 255;
-  LED(pixel) = CRGB(r, g, b);
+  LED(pixel) = CRGB(
+    ((color.r * color.a) + (LED(pixel).r * (255 - color.a))) / 255,
+    ((color.g * color.a) + (LED(pixel).g * (255 - color.a))) / 255,
+    ((color.b * color.a) + (LED(pixel).b * (255 - color.a))) / 255
+  );
+}
+
+void LEDString::erase() {
+  for (uint16_t p = 0; p < NUM_LEDS; p++) leds[p] = 0;
+}
+
+CRGB gamma1(CRGB color) {
+  return CRGB(color.r, color.g, color.b);
+}
+
+CRGB gamma2(CRGB color) {
+  return CRGB(color.r, color.g, color.b);
+}
+
+void LEDString::gammaCorrect() {
+  for (uint16_t p =   0; p <  150; p++) leds[p] = gamma1(leds[p]);
+  for (uint16_t p = 150; p <  300; p++) leds[p] = gamma2(leds[p]);
+  for (uint16_t p = 300; p <  450; p++) leds[p] = gamma2(leds[p]);
+  for (uint16_t p = 450; p <  600; p++) leds[p] = gamma1(leds[p]);
+  for (uint16_t p = 602; p <  752; p++) leds[p] = gamma2(leds[p]);
+  for (uint16_t p = 752; p <  902; p++) leds[p] = gamma1(leds[p]);
+  for (uint16_t p = 902; p < 1052; p++) leds[p] = gamma1(leds[p]);
 }
 
 LEDStringManager::LEDStringManager(PowerManager *power, ConnectionManager *connection) {
   this->power = power;
   this->connection = connection;
   this->renderer = NULL;
-  this->string = &canvas;
 }
 
 void LEDStringManager::setup() {
@@ -128,7 +150,9 @@ void LEDStringManager::loop() {
   // Render
   if (renderer) {
     long startTime = millis();
-    renderer->render(string);
+    canvas.erase();
+    renderer->render(&canvas);
+    canvas.gammaCorrect();
     millisInRender += millis() - startTime;
   }
 
