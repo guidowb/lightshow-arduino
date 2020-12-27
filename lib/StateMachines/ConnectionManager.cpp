@@ -1,35 +1,39 @@
 #include "ConnectionManager.h"
+#include "LogManager.h"
 
 #include <ArduinoWebsockets.h>
+
+#define MAX_MSG_SIZE 1024
 
 using namespace websockets;
 
 static WebsocketsClient client;
 static ConnectionManager *manager;
 
+static Logger logger("connection");
+
 void onMessageCallback(WebsocketsMessage message) {
-    Serial.println("Received message");
     const char *str = message.c_str();
-    Serial.println(str);
+    logger.debug("Received message: %s", str);
     manager->handleMessage(str);
 }
 
 void onEventsCallback(WebsocketsEvent event, String data) {
     if (event == WebsocketsEvent::ConnectionOpened) {
-        Serial.println("Connection opened");
+        logger.info("Connection opened");
         client.ping();
         manager->setConnected(true);
     }
     else if (event == WebsocketsEvent::ConnectionClosed) {
-        Serial.println("Connection closed");
+        logger.info("Connection closed");
         manager->setConnected(false);
     }
     else if (event == WebsocketsEvent::GotPing) {
-        Serial.println("Received ping, sending pong");
+        logger.debug("Received ping, sending pong");
         client.pong();
     }
     else if (event == WebsocketsEvent::GotPong) {
-        Serial.println("Received pong");
+        logger.debug("Received pong");
     }
 }
 
@@ -53,10 +57,10 @@ void ConnectionManager::connect() {
     if (now - lastConnect >= 5000) {
         lastConnect = now;
         if (client.connect(url)) {
-            Serial.println("Connect successful");
+            logger.info("Connect successful");
         }
         else {
-            Serial.println("Connect failed");
+            logger.info("Connect failed");
         }
     }
 }
@@ -66,7 +70,7 @@ void ConnectionManager::loop() {
     client.poll();
     long now = millis();
     if (now - lastUpdate >= 40000) {
-        Serial.println("Sending ping");
+        logger.debug("Sending ping");
         client.ping();
         lastUpdate = now;
     }
@@ -82,7 +86,7 @@ void ConnectionManager::handleMessage(const char *message) {
         if (handler->handleMessage(message)) return;
         handler = handler->next;
     }
-    Serial.println("No handler for message");
+    logger.error("No handler for message");
 }
 
 void ConnectionManager::add(MessageHandler *handler) {
@@ -93,9 +97,8 @@ void ConnectionManager::add(MessageHandler *handler) {
 void ConnectionManager::send(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    char buffer[1024];
-    vsprintf(buffer, fmt, args);
-    Serial.printf("Sending message: %s\n", buffer);
+    char buffer[MAX_MSG_SIZE];
+    vsnprintf(buffer, MAX_MSG_SIZE, fmt, args);
     client.send(buffer);
     lastUpdate = millis();
     va_end(args);

@@ -1,11 +1,12 @@
 #include "WifiManager.h"
-
-#ifndef MEGA
+#include "LogManager.h"
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiGeneric.h>
 
 #include <wifi.h> // Secrets that live outside the repo
+
+static Logger logger("wifi");
 
 WiFiManager::WiFiManager() : connectionCheck(100), connectionAttempt(5000) {}
 
@@ -27,7 +28,7 @@ void WiFiManager::loop() {
 
 void WiFiManager::enterDisconnected() {
     setState(WIFI_DISCONNECTED);
-    Serial.println("WIFI disconnected");
+    logger.info("WIFI disconnected");
     connectionAttempt.reset();
 }
 
@@ -46,7 +47,7 @@ void WiFiManager::whileDisconnected() {
 
 void WiFiManager::enterConnecting() {
     setState(WIFI_CONNECTING);
-    Serial.println("WIFI trying to connect ...");
+    logger.info("WIFI trying to connect ...");
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 }
 
@@ -63,7 +64,7 @@ void WiFiManager::whileConnecting() {
 }
 
 void WiFiManager::enterConnected() {
-    Serial.printf("WIFI connected to %s\n", WiFi.SSID().c_str());
+    logger.info("WIFI connected to %s\n", WiFi.SSID().c_str());
     setState(WIFI_CONNECTED);
 }
 
@@ -76,5 +77,3 @@ void WiFiManager::whileConnected() {
 bool WiFiManager::isConnected() {
     return getState() == WIFI_CONNECTED;
 }
-
-#endif

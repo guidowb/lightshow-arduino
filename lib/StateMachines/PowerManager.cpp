@@ -1,4 +1,5 @@
 #include "PowerManager.h"
+#include "LogManager.h"
 
 #include <Arduino.h>
 
@@ -19,6 +20,8 @@ const int LED_OFF = LOW;
 const int LED_ON = LOW;
 const int LED_OFF = HIGH;
 #endif
+
+static Logger logger("power");
 
 PowerManager::PowerManager() : powerCheck(100), autoShutoff(30000) {
   setState(POWERED_OFF);
@@ -44,7 +47,7 @@ void PowerManager::loop() {
 }
 
 void PowerManager::enterPoweringOff() {
-  Serial.println("Powering off");
+  logger.info("Powering off");
   setState(POWERING_OFF);
   digitalWrite(controlPin, LOW);
   powerCheck.reset();
@@ -64,7 +67,7 @@ void PowerManager::whilePoweringOff() {
 }
 
 void PowerManager::enterPoweringOn() {
-  Serial.println("Powering on");
+  logger.info("Powering on");
   setState(POWERING_ON);
   digitalWrite(controlPin, HIGH);
   autoShutoff.reset();
@@ -90,7 +93,7 @@ void PowerManager::whilePoweringOn() {
 }
 
 void PowerManager::enterPoweredOn() {
-  Serial.println("Powered on");
+  logger.info("Powered on");
   setState(POWERED_ON);
   digitalWrite(LED_BUILTIN, LED_ON);
 }
@@ -109,7 +112,7 @@ void PowerManager::whilePoweredOn() {
 }
 
 void PowerManager::enterPoweredOff() {
-  Serial.println("Powered off");
+  logger.info("Powered off");
   setState(POWERED_OFF);
   digitalWrite(LED_BUILTIN, LED_OFF);
 }
@@ -124,7 +127,7 @@ void PowerManager::whilePoweredOff() {
 }
 
 void PowerManager::enterPowerLost() {
-  Serial.println("Power lost");
+  logger.info("Power lost");
   setState(POWER_LOST);
   digitalWrite(LED_BUILTIN, LED_OFF);
   powerCheck.reset();
@@ -140,7 +143,7 @@ void PowerManager::whilePowerLost() {
 }
 
 void PowerManager::enterUnmanaged() {
-  Serial.println("Power is not managed");
+  logger.info("Power is not managed");
   setState(POWER_UNMANAGED);
   digitalWrite(LED_BUILTIN, LED_ON);
 }
