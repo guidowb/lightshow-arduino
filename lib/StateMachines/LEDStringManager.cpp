@@ -120,10 +120,10 @@ static CRGB gamma_2(CRGB color) {
 }
 
 void LEDString::gammaCorrect() {
-  for (uint16_t p =   0; p <  150; p++) leds[p] = gamma_1(leds[p]);
-  for (uint16_t p = 150; p <  300; p++) leds[p] = gamma_2(leds[p]);
-  for (uint16_t p = 300; p <  450; p++) leds[p] = gamma_2(leds[p]);
-  for (uint16_t p = 450; p <  600; p++) leds[p] = gamma_1(leds[p]);
+  for (uint16_t p =   1; p <  151; p++) leds[p] = gamma_1(leds[p]);
+  for (uint16_t p = 151; p <  301; p++) leds[p] = gamma_2(leds[p]);
+  for (uint16_t p = 301; p <  451; p++) leds[p] = gamma_2(leds[p]);
+  for (uint16_t p = 451; p <  601; p++) leds[p] = gamma_1(leds[p]);
   for (uint16_t p = 602; p <  752; p++) leds[p] = gamma_2(leds[p]);
   for (uint16_t p = 752; p <  902; p++) leds[p] = gamma_1(leds[p]);
   for (uint16_t p = 902; p < 1052; p++) leds[p] = gamma_1(leds[p]);
