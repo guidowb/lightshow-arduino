@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <FastLED.h>
 
+#include <LogManager.h>
 #include <PowerManager.h>
 #include <LEDStringManager.h>
 #include <WiFiManager.h>
@@ -15,6 +16,7 @@ ConnectionManager connectionManager("https://api.lightshow.guidowb.online/connec
 PowerManager powerManager;
 LEDStringManager ledStringManager(&powerManager, &clockManager, &connectionManager);
 CommandHandler commandHandler(&ledStringManager);
+LogManager logManager(&connectionManager);
 
 void setup() {
   // put your setup code here, to run once:
