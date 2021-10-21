@@ -63,7 +63,6 @@ void LogManager::log(const char *tag, LogLevel level, const char *fmt, ...) {
     va_end(args);
 
     if (Serial) Serial.printf("%s\n", buffer);
-
     if (connection) connection->send("log %s", buffer);
 }
 
