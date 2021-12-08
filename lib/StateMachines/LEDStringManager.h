@@ -19,12 +19,12 @@ private:
   ClockManager *clock;
   ConnectionManager *connection;
   Renderer *renderer;
-  long millisStarted;
-  long millisInRender;
-  long millisInUpdate;
-  long frames;
-  long lastStats;
-  long lastLit;
+  unsigned long millisStarted;
+  unsigned long millisInRender;
+  unsigned long millisInUpdate;
+  unsigned long frames;
+  unsigned long lastStats;
+  unsigned long lastLit;
 
   void resetStats();
   void sendStats(bool final = false);

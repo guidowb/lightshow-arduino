@@ -1,4 +1,5 @@
 #include "LEDStringManager.h"
+#include "LogManager.h"
 
 #include <Arduino.h>
 #include <FastLED.h>
@@ -27,6 +28,8 @@
 #define NUM_LEDS_RIGHT (NUM_STRINGS_RIGHT * NUM_LEDS_PER_STRING)
 #define NUM_LEDS       (NUM_LEDS_LEFT + NUM_LEDS_RIGHT)
 #define SIZE_LEDS      (NUM_LEDS + NUM_BUFFER_LEDS * 2)
+
+static Logger logger("led string");
 
 class LEDString : public Canvas {
 public:
@@ -160,20 +163,20 @@ void LEDStringManager::resetStats() {
 
 void LEDStringManager::sendStats(bool final) {
   if (!connection) return;
-  long millisCurrent = millis();
-  long millisTotal = millisCurrent - millisStarted;
-  if (millisTotal == 0) millisTotal = 1; // Avoid division by zero
-  int fps = (frames * 1000) / millisTotal;
-  int render = (millisInRender * 100) / millisTotal;
-  int update = (millisInUpdate * 100) / millisTotal;
-  connection->send("stats%s fps=%d, render%%=%d, update%%=%d", final ? " (final)" : "", fps, render, update);
+  unsigned long millisCurrent = millis();
+  unsigned long millisElapsed = millisCurrent - millisStarted;
+  if (millisElapsed == 0) millisElapsed = 1; // Avoid division by zero
+  int fps = (frames * 1000) / millisElapsed;
+  int render = (millisInRender * 100) / millisElapsed;
+  int update = (millisInUpdate * 100) / millisElapsed;
+  logger.info("stats%s fps=%d, render%%=%d, update%%=%d", final ? " (final)" : "", fps, render, update);
 }
 
 void LEDStringManager::loop() {
 
   // Render
   if (renderer) {
-    long startTime = millis();
+    unsigned long startTime = millis();
     canvas.erase();
     renderer->render(&canvas);
     canvas.gammaCorrect();
@@ -185,7 +188,7 @@ void LEDStringManager::loop() {
 
   // Update the string
   if (power->isPowered()) {
-    long startTime = millis();
+    unsigned long startTime = millis();
     FastLED.show();
     millisInUpdate += millis() - startTime;
     frames++;
@@ -198,14 +201,14 @@ void LEDStringManager::loop() {
   }
 
   // Update server stats
-  long currentTime = millis();
+  unsigned long currentTime = millis();
   if (currentTime - lastStats >= 30000) {
     sendStats();
+    resetStats();
     lastStats = currentTime;
   }
 }
 
 void LEDStringManager::setPattern(const char *pattern) {
   renderer = compile("arduino", pattern);
-  resetStats();
 }
