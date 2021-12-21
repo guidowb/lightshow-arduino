@@ -37,7 +37,7 @@ void Logger::error(const char *fmt, ...) {
 void Logger::log(LogLevel level, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    LogManager::log(tag, DEBUG, fmt, args);
+    LogManager::log(tag, level, fmt, args);
     va_end(args);
 }
 
