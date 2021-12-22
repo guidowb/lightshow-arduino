@@ -34,11 +34,8 @@ void Logger::error(const char *fmt, ...) {
     va_end(args);
 }
 
-void Logger::log(LogLevel level, const char *fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
+void Logger::log(LogLevel level, const char *fmt, va_list args) {
     LogManager::log(tag, level, fmt, args);
-    va_end(args);
 }
 
 ConnectionManager *LogManager::connection = NULL;
@@ -47,7 +44,7 @@ LogManager::LogManager(ConnectionManager *connection) {
     this->connection = connection;
 }
 
-void LogManager::log(const char *tag, LogLevel level, const char *fmt, ...) {
+void LogManager::log(const char *tag, LogLevel level, const char *fmt, va_list args) {
 
     char buffer[MAX_MSG_SIZE];
     char *dst = buffer;
@@ -57,10 +54,7 @@ void LogManager::log(const char *tag, LogLevel level, const char *fmt, ...) {
     dst += used;
     remaining -= used;
 
-    va_list args;
-    va_start(args, fmt);
     vsnprintf(dst, remaining, fmt, args);
-    va_end(args);
 
     if (Serial) Serial.printf("%s\n", buffer);
     if (connection) connection->send("log %s", buffer);

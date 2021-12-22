@@ -20,7 +20,7 @@ public:
     void error(const char *fmt, ...);
 
 private:
-    void log(LogLevel level, const char *fmt, ...);
+    void log(LogLevel level, const char *fmt, va_list args);
 
 private:
     const char *tag;
@@ -31,7 +31,7 @@ public:
     LogManager(ConnectionManager *connection = NULL);
 
 public:
-    static void log(const char *tag, LogLevel level, const char *fmt, ...);
+    static void log(const char *tag, LogLevel level, const char *fmt, va_list args);
     static const char *toString(LogLevel level);
 
 private:
