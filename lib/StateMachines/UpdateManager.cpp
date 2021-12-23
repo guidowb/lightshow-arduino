@@ -17,23 +17,22 @@ void UpdateManager::enable() {
     ArduinoOTA.setPassword(ota_password);
 
     ArduinoOTA.onStart([this]() {
-        logger.info("Starting update");
         this->setState(UPDATING);
     });
     ArduinoOTA.onEnd([this]() {
-        logger.info("Finishing update");
         this->setState(DISABLED);
     });
     ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-        logger.info("Update loading %u%%", (progress / (total / 100)));
     });
-    ArduinoOTA.onError([](ota_error_t error) {
-        if (error == OTA_AUTH_ERROR) logger.error("Update auth failed");
-        else if (error == OTA_BEGIN_ERROR) logger.error("Update begin failed");
-        else if (error == OTA_CONNECT_ERROR) logger.error("Update connect failed");
-        else if (error == OTA_RECEIVE_ERROR) logger.error("Update receive failed");
-        else if (error == OTA_END_ERROR) logger.error("Update end failed");
-        else logger.error("Update failed with error code %u", error);
+    ArduinoOTA.onError([this](ota_error_t error) {
+    // ---- It doesn't appear that we can safely log from inside any of these -----
+        // if (error == OTA_AUTH_ERROR) logger.error("Update auth failed");
+        // else if (error == OTA_BEGIN_ERROR) logger.error("Update begin failed");
+        // else if (error == OTA_CONNECT_ERROR) logger.error("Update connect failed");
+        // else if (error == OTA_RECEIVE_ERROR) logger.error("Update receive failed");
+        // else if (error == OTA_END_ERROR) logger.error("Update end failed");
+        // else logger.error("Update failed with error code %u", error);
+        this->setState(DISABLED);
     });
     ArduinoOTA.begin();
 
@@ -41,6 +40,8 @@ void UpdateManager::enable() {
 }
 
 void UpdateManager::loop() {
-    if (getState() == DISABLED && wifiManager->isConnected()) enable();
-    if (getState() != DISABLED) ArduinoOTA.handle();
+    do {
+        if (getState() == DISABLED && wifiManager->isConnected()) enable();
+        if (getState() != DISABLED) ArduinoOTA.handle();
+    } while (getState() == UPDATING);
 }
