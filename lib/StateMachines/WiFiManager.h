@@ -1,5 +1,5 @@
 #ifndef _WIFI_MANAGER_H_
-#define _WIFI_MANAGER_H
+#define _WIFI_MANAGER_H_
 
 #include "StateMachine.h"
 #include "RateLimiter.h"
