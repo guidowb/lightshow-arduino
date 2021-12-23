@@ -212,3 +212,11 @@ void LEDStringManager::loop() {
 void LEDStringManager::setPattern(const char *pattern) {
   renderer = compile("arduino", pattern);
 }
+
+bool LEDStringManager::handleMessage(const char *message) {
+    if (startsWith(message, "pattern\n")) {
+        setPattern(message + 8);
+        return true;
+    }
+    return false;
+}

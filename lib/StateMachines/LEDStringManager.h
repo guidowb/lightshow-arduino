@@ -6,13 +6,15 @@
 #include "ClockManager.h"
 #include "LightShow.h"
 
-class LEDStringManager{
+class LEDStringManager : public MessageHandler {
 public:
   LEDStringManager(PowerManager *power, ClockManager *clock, ConnectionManager *connection);
 
   void setup();
   void loop();
   void setPattern(const char *pattern);
+
+  bool handleMessage(const char *message);
 
 private:
   PowerManager *power;

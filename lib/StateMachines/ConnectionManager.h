@@ -1,14 +1,7 @@
 #ifndef _CONNECTION_MANAGER_H_
 #define _CONNECTION_MANAGER_H_
 
-class MessageHandler {
-public:
-    virtual bool handleMessage(const char *message) = 0;
-
-private:
-    friend class ConnectionManager;
-    MessageHandler *next;
-};
+#include "MessageHandler.h"
 
 class ConnectionManager {
 public:
