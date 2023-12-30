@@ -57,7 +57,7 @@ void LogManager::log(const char *tag, LogLevel level, const char *fmt, va_list a
     vsnprintf(dst, remaining, fmt, args);
 
     if (Serial) Serial.printf("%s\n", buffer);
-    if (connection) connection->send("log %s", buffer);
+    if (connection) connection->send("lightshow/log/%c", "%s", buffer);
 }
 
 const char *LogManager::toString(LogLevel level) {

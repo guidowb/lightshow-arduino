@@ -14,7 +14,7 @@ public:
   void loop();
   void setPattern(const char *pattern);
 
-  bool handleMessage(const char *message);
+  virtual bool handleMessage(const char *topic, const byte *message, u_int32_t length);
 
 private:
   PowerManager *power;

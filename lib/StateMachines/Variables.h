@@ -5,10 +5,13 @@
 #define STR(A) ST(A)
 
 extern const char *twinkle;
+extern const char *xmas_timed;
 extern const char *xmas1;
 extern const char *xmas2;
 extern const char *incandescent;
 extern const char *off;
+extern const char *ukraine;
+extern const char *halloween;
 
 #ifndef PATTERN
 #define PATTERN off

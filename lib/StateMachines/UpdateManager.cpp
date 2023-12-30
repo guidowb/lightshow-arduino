@@ -19,11 +19,14 @@ void UpdateManager::enable() {
     ArduinoOTA.onStart([this]() {
         this->setState(UPDATING);
     });
+
     ArduinoOTA.onEnd([this]() {
         this->setState(DISABLED);
     });
+
     ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     });
+
     ArduinoOTA.onError([this](ota_error_t error) {
     // ---- It doesn't appear that we can safely log from inside any of these -----
         // if (error == OTA_AUTH_ERROR) logger.error("Update auth failed");

@@ -12,7 +12,7 @@
 
 WiFiManager wifiManager;
 ClockManager clockManager;
-ConnectionManager connectionManager("https://api.lightshow.guidowb.online/connect", PROGRAM);
+ConnectionManager connectionManager(&wifiManager);
 PowerManager powerManager;
 LEDStringManager ledStringManager(&powerManager, &clockManager, &connectionManager);
 LogManager logManager(&connectionManager);
@@ -27,7 +27,7 @@ void setup() {
   wifiManager.setup();
   clockManager.setup();
   updateManager.setup();
-  connectionManager.add(&ledStringManager);
+  connectionManager.subscribe("lightshow/pattern", &ledStringManager);
   connectionManager.setup();
 
   ledStringManager.setPattern(PATTERN);
