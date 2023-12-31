@@ -138,6 +138,7 @@ LEDStringManager::LEDStringManager(PowerManager *power, ClockManager *clock, Con
   this->power = power;
   this->clock = clock;
   this->connection = connection;
+  this->connection->subscribe("lightshow/pattern/%c", this);
   this->renderer = NULL;
   canvas.clock = clock;
 }
@@ -154,7 +155,7 @@ bool LEDStringManager::isLit() {
 }
 
 void LEDStringManager::resetStats() {
-  if (this->frames != 0) sendStats(true);
+  // if (this->frames != 0) sendStats(true);
   this->millisStarted = millis();
   this->frames = 0;
   this->millisInRender = 0;
@@ -210,10 +211,19 @@ void LEDStringManager::loop() {
 }
 
 void LEDStringManager::setPattern(const char *pattern) {
+  resetStats();
   renderer = compile("arduino", pattern);
 }
 
 bool LEDStringManager::handleMessage(const char *topic, const uint8_t *message, uint32_t length) {
-  setPattern((const char *) message);
-  return true;
+  if (!strncmp(topic, "lightshow/pattern/", 18)) {
+    char *pattern = new char[length + 1];
+    strncpy(pattern, (const char *) message, length);
+    pattern[length] = '\0';
+    logger.info("setting pattern %s", pattern);
+    setPattern(pattern);
+    delete pattern;
+    return true;
+  }
+  return false;
 }

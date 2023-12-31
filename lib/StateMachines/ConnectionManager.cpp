@@ -91,8 +91,6 @@ void ConnectionManager::loop() {
 }
 
 bool ConnectionManager::handleMessage(const char *topic, const uint8_t *message, uint32_t length) {
-    topic = topic + strlen(mqtt_topic_prefix) + 1;
-
     if (!strcmp(topic, "ping") || !strncmp(topic, "ping/", 5)) {
         send("pong/lightshow/%c", "");
         return true;
@@ -101,6 +99,7 @@ bool ConnectionManager::handleMessage(const char *topic, const uint8_t *message,
 }
 
 void ConnectionManager::dispatchMessage(const char *topic, const uint8_t *message, uint32_t length) {
+    topic = topic + strlen(mqtt_topic_prefix) + 1;
     Subscription *subscription = this->subscriptions;
     while (subscription != NULL) {
         if (subscription->handler->handleMessage(topic, message, length)) return;
