@@ -33,6 +33,7 @@ private:
 
     WiFiManager *wifi;
     Subscription *subscriptions;
+    int state;
 };
 
 #endif

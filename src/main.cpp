@@ -27,7 +27,7 @@ void setup() {
   wifiManager.setup();
   clockManager.setup();
   updateManager.setup();
-  connectionManager.subscribe("lightshow/pattern", &ledStringManager);
+  // connectionManager.subscribe("lightshow/pattern", &ledStringManager);
   connectionManager.setup();
 
   ledStringManager.setPattern(PATTERN);

@@ -29,10 +29,9 @@ const int   mqtt_broker_port  = MQTT_BROKER_PORT;
 const char *mqtt_topic_prefix = MQTT_TOPIC_PREFIX;
 const char *mqtt_client_id    = STR(MQTT_CLIENT_ID);
 
-WiFiClient wifiClient;
-PubSubClient mqttClient(wifiClient);
+static WiFiClient wifiClient;
+static PubSubClient mqttClient(wifiClient);
 static ConnectionManager *manager;
-static int lastStatus = 9999;
 
 static Logger logger("connection");
 
@@ -43,6 +42,7 @@ static void callback(const char *topic, const uint8_t *message, uint32_t length)
 ConnectionManager::ConnectionManager(WiFiManager *wifi) {
     this->wifi = wifi;
     this->subscriptions = NULL;
+    this->state = 9999;
 }
 
 void ConnectionManager::setup() {
@@ -55,43 +55,45 @@ void ConnectionManager::setup() {
 }
 
 void ConnectionManager::connect() {
+    int lastState = this->state;
+    this->state = mqttClient.state();
+
     if (!wifi->isConnected()) return;
-    int state = mqttClient.state();
-    if (state == 0) return;
+    if (this->state == 0) return;
     if (mqttClient.connected()) return;
+
     bool success = mqttClient.connect(mqtt_client_id);
-    if (success) {
+    int newState = mqttClient.state();
+
+    if (success && newState == 0) {
         logger.info("connected to %s:%d as client id %s", mqtt_broker_host, mqtt_broker_port, mqtt_client_id);
-        lastStatus = 9999;
-    }
-    else {
-        state = mqttClient.state();
-        if (state != lastStatus) {
-            lastStatus = state;
-            logger.info("connect failed, state %d", state);
-            logger.info("host: %s", mqtt_broker_host);
-            logger.info("port: %d", mqtt_broker_port);
-            logger.info("client id: %s", mqtt_client_id);
+
+        Subscription *subscription = this->subscriptions;
+        char topic[MAX_MSG_SIZE];
+        while (subscription) {
+            expandTopic(topic, subscription->topic);
+            logger.info("subscribing to topic: %s", topic);
+            mqttClient.subscribe(topic);
+            subscription = subscription->next;
         }
     }
-    Subscription *subscription = this->subscriptions;
-    // while (subscription) {
-    //     char topic[MAX_MSG_SIZE];
-    //     expandTopic(topic, subscription->topic);
-    //     mqttClient.subscribe(topic);
-    //     subscription = subscription->next;
-    // }
+    else if (newState != lastState) {
+        logger.info("connect failed, state %d", state);
+        logger.info("host: %s", mqtt_broker_host);
+        logger.info("port: %d", mqtt_broker_port);
+        logger.info("client id: %s", mqtt_client_id);
+    }
+    this->state = newState;
 }
 
 void ConnectionManager::loop() {
-    connect();
-    mqttClient.loop();
+    if (!mqttClient.loop()) connect();
 }
 
 bool ConnectionManager::handleMessage(const char *topic, const uint8_t *message, uint32_t length) {
     topic = topic + strlen(mqtt_topic_prefix) + 1;
 
-    if (!strcmp(topic, "ping")) {
+    if (!strcmp(topic, "ping") || !strncmp(topic, "ping/", 5)) {
         send("pong/lightshow/%c", "");
         return true;
     }
@@ -116,6 +118,8 @@ void ConnectionManager::subscribe(const char *topic, MessageHandler *handler) {
 }
 
 void ConnectionManager::send(const char *topic, const char *fmt, ...) {
+    if (this->state != 0) return;
+
     va_list args;
     va_start(args, fmt);
     char buffer[MAX_MSG_SIZE];
